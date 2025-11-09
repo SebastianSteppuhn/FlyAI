@@ -1,0 +1,81 @@
+<cpacs version="3.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.cpacs.de/schema/v3/cpacs_schema.xsd">
+  <vehicles>
+    <aircraft>
+      <model>
+        <geometry>
+          <wing uID="wing1" xsi:type="cpacs:WingType">
+            <name>Main Wing</name>
+            <position>
+              <x>0</x>
+              <y>0</y>
+              <z>0</z>
+            </position>
+            <sweep xsi:type="cpacs:LengthType">0</sweep>
+            <span xsi:type="cpacs:LengthType">10</span>
+            <chord xsi:type="cpacs:LengthType">1.2</chord>
+            <taper xsi:type="cpacs:NonNegativeRealType">0.5</taper>
+            <twist xsi:type="cpacs:AngleDegType">0</twist>
+            <airfoil xsi:type="cpacs:ReferenceType">NACA2412</airfoil>
+            <controlSurfaces>
+              <aileron xsi:type="cpacs:ControlSurfaceType" uID="aileron1">
+                <name>Aileron</name>
+                <deflection xsi:type="cpacs:AngleDegType">0</deflection>
+              </aileron>
+            </controlSurfaces>
+          </wing>
+          <horizontalTail uID="htail1" xsi:type="cpacs:WingType">
+            <name>Horizontal Tail</name>
+            <position>
+              <x>7.5</x>
+              <y>0</y>
+              <z>0.8</z>
+            </position>
+            <span xsi:type="cpacs:LengthType">3.5</span>
+            <chord xsi:type="cpacs:LengthType">0.6</chord>
+            <taper xsi:type="cpacs:NonNegativeRealType">1</taper>
+            <twist xsi:type="cpacs:AngleDegType">0</twist>
+            <airfoil xsi:type="cpacs:ReferenceType">NACA0010</airfoil>
+          </horizontalTail>
+          <verticalTail uID="vtail1" xsi:type="cpacs:WingType">
+            <name>Vertical Tail</name>
+            <position>
+              <x>7.5</x>
+              <y>0</y>
+              <z>0</z>
+            </position>
+            <span xsi:type="cpacs:LengthType">1.5</span>
+            <chord xsi:type="cpacs:LengthType">0.7</chord>
+            <taper xsi:type="cpacs:NonNegativeRealType">1</taper>
+            <twist xsi:type="cpacs:AngleDegType">0</twist>
+            <airfoil xsi:type="cpacs:ReferenceType">NACA0012</airfoil>
+          </verticalTail>
+          <landingGear uID="gear1" xsi:type="cpacs:LandingGearType">
+            <name>Tricycle Landing Gear</name>
+            <type>Tricycle</type>
+            <mainGear>
+              <position>
+                <x>2.5</x>
+                <y>1</y>
+                <z>-0.3</z>
+              </position>
+            </mainGear>
+            <mainGear>
+              <position>
+                <x>2.5</x>
+                <y>-1</y>
+                <z>-0.3</z>
+              </position>
+            </mainGear>
+            <noseGear>
+              <position>
+                <x>0.8</x>
+                <y>0</y>
+                <z>-0.3</z>
+              </position>
+            </noseGear>
+          </landingGear>
+        </geometry>
+      </model>
+    </aircraft>
+  </vehicles>
+</cpacs>
