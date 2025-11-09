@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='utf-8'?>
+<cpacs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.3" xsi:noNamespaceSchemaLocation="http://www.cpacs.de/schema/v3/cpacs_schema.xsd">
+  <vehicles>
+    <aircraft>
+      <model uID="av-001" name="TwoSeatTrainer">
+        <wings>
+          <wing uID="wing-main" name="MainWing" parentUID="fuselage-001" symmetric="true">
+            <position xsi:type="cpacsPointSimple">
+              <x>0.0</x>
+              <y>0.0</y>
+              <z>0.0</z>
+            </position>
+            <geometry>
+              <planform xsi:type="cpacsPlanformSimple">
+                <b>10.0</b>
+                <cRoot>1.6</cRoot>
+                <cTip>0.8</cTip>
+                <sweepLE>0.0</sweepLE>
+                <dihedral>3.0</dihedral>
+              </planform>
+              <airfoils>
+                <airfoil uID="af-root" name="NACA2412"/>
+                <airfoil uID="af-tip" name="NACA2412"/>
+              </airfoils>
+              <sections>
+                <section uID="wing-sec-root" eta="0.0" airfoilUID="af-root">
+                  <chord>1.6</chord>
+                  <incidence>2.0</incidence>
+                  <twist>0.0</twist>
+                </section>
+                <section uID="wing-sec-tip" eta="1.0" airfoilUID="af-tip">
+                  <chord>0.8</chord>
+                  <incidence>0.0</incidence>
+                  <twist>-2.0</twist>
+                </section>
+              </sections>
+            </geometry>
+          </wing>
+        </wings>
+        <fuselages>
+          <fuselage uID="fuselage-001" name="Fuselage" length="7.5" width="1.2" height="1.3" positionX="0" positionY="0" positionZ="0"/>
+        </fuselages>
+        <empennage>
+          <horizontalStabilizer uID="hs-001" name="HorizontalStab">
+            <position xsi:type="cpacsPointSimple">
+              <x>6.5</x>
+              <y>0.0</y>
+              <z>0.8</z>
+            </position>
+            <geometry>
+              <planform xsi:type="cpacsPlanformSimple">
+                <b>3.2</b>
+                <cRoot>1.0</cRoot>
+                <cTip>0.5</cTip>
+                <sweepLE>5.0</sweepLE>
+                <dihedral>0.0</dihedral>
+              </planform>
+              <airfoils>
+                <airfoil uID="af-hs" name="NACA0012"/>
+              </airfoils>
+              <sections>
+                <section uID="hs-sec-root" eta="0.0" airfoilUID="af-hs">
+                  <chord>1.0</chord>
+                  <incidence>0.0</incidence>
+                  <twist>0.0</twist>
+                </section>
+                <section uID="hs-sec-tip" eta="1.0" airfoilUID="af-hs">
+                  <chord>0.5</chord>
+                  <incidence>0.0</incidence>
+                  <twist>0.0</twist>
+                </section>
+              </sections>
+            </geometry>
+          </horizontalStabilizer>
+          <verticalStabilizer uID="vs-001" name="VerticalStab">
+            <position xsi:type="cpacsPointSimple">
+              <x>6.5</x>
+              <y>0.0</y>
+              <z>0.0</z>
+            </position>
+            <geometry>
+              <sweepLE>20.0</sweepLE>
+              <height>1.5</height>
+              <chordRoot>1.0</chordRoot>
+              <chordTip>0.5</chordTip>
+              <airfoil uID="af-vs" name="NACA0012"/>
+            </geometry>
+          </verticalStabilizer>
+        </empennage>
+        <landingGears>
+          <fixedGear uID="gear-nose" name="NoseGear" positionX="1.5" positionY="0.0" positionZ="-0.6" type="nose" wheelDiameter="0.3"/>
+          <fixedGear uID="gear-main-left" name="MainGearLeft" positionX="3.5" positionY="0.6" positionZ="-0.6" type="main" wheelDiameter="0.4"/>
+          <fixedGear uID="gear-main-right" name="MainGearRight" positionX="3.5" positionY="-0.6" positionZ="-0.6" type="main" wheelDiameter="0.4"/>
+        </landingGears>
+      </model>
+    </aircraft>
+  </vehicles>
+</cpacs>
