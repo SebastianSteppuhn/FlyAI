@@ -1,6 +1,25 @@
-# create the env from YAML
-conda env create -f environment.yml
+# FlyAI — Prompt-to-Aircraft + CFD Optimizer
 
-# if you also saved requirements.txt, reinstall exact pip deps:
-conda activate cpacs-cfd
+FlyAI turns a text prompt into an aircraft concept, runs CFD, and iterates to reduce drag.
+
+> **Quick start:**  
+> **You can run everything by executing:**  
+> `python all2/main.py`
+
+---
+
+## Prereqs
+- Python 3.10+ (Conda/Mamba recommended)
+- (Optional but recommended) System deps used by the pipeline: CPACS/TiGL, SU2, OpenMPI, and a working OpenGL/OSMesa stack for off-screen renders.
+
+If you already have a conda env set up, you’re good. Otherwise:
+
+```bash
+# option A: from YAML if available
+conda env create -f environment.full.yml
+conda activate flyai
+
+# option B: minimal
+conda create -n flyai python=3.11 -y
+conda activate flyai
 pip install -r requirements.txt
