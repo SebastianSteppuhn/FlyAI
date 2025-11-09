@@ -284,4 +284,4 @@ dependencies:
       - uvicorn==0.38.0
       - vtk==9.5.2
       - websockets==15.0.1
-prefix: /home/sebastian/miniconda3/envs/cpacs-cfd
+
