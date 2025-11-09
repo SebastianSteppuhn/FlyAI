@@ -1,5 +1,5 @@
 *.vtu
 *.cgns
 *.su2
-
+.env
 .venv/
