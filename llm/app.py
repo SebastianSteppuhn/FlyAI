@@ -1,169 +1,147 @@
 #!/usr/bin/env python3
-# app.py — prompt -> CPACS v3.3 (with wing uID="wing1") -> test.cpacs.xml
-# Tailored so your OCC exporter script can load the wing via get_wing("wing1")
-#
-# .env (same directory):
-#   OPENAI_API_KEY=sk-...
-#
-# Optional sanity check uses TiXI3/TiGL3 (install from conda-forge).
+"""
+app.py — prompt -> CPACS v3.3 (includes wing uID="wing1") -> test2.cpacs.xml
 
+Minimal, example-driven, and conservative:
+- Forces CPACS root: version="3.3" and the standard schema location attr
+- Writes a single aircraft model with a 'wing1' you can open via TiGL get_wing("wing1")
+- No schema fetching, no emojis, no extras
+- Optional: if TiXI/TiGL are importable, do a tiny smoketest to ensure 'wing1' lofts
+
+Usage
+-----
+1) Put your OpenAI API key in the environment:
+   export OPENAI_API_KEY=sk-...
+
+   (Optional) If you prefer a .env file:
+   echo 'OPENAI_API_KEY=sk-...' > .env
+
+2) Run:
+   python app.py --prompt "Simple trainer ~10 m span, straight taper"
+
+Notes
+-----
+- The model is asked to follow CPACS examples structure closely and return only XML.
+- Result path: test2.cpacs.xml
+"""
+
+import argparse
 import os
-import ssl
-import urllib.request
 from pathlib import Path
 from textwrap import dedent
-from tempfile import NamedTemporaryFile, gettempdir
 
-from dotenv import load_dotenv
-from lxml import etree
-import xmlschema
-import certifi
-
-# Optional: try importing TiXI/TiGL for a quick smoke test (not required)
 try:
-    import tixi3
-    import tigl3
+    from dotenv import load_dotenv  # optional
+    load_dotenv()
+except Exception:
+    pass
+
+# Optional TiXI/TiGL smoketest (ignored if not available)
+try:
+    import tixi3  # conda-forge: tixi3
+    import tigl3  # conda-forge: tigl3
     HAVE_TIGL = True
 except Exception:
     HAVE_TIGL = False
 
-# -------------------- USER EDITABLE --------------------
-PROMPT = (
-    "Single-engine two-seat trainer, ~10 m span, straight-taper wing, "
-    "simple tailplane, tricycle gear. Keep geometry minimal and plausible."
-)
-CPACS_OUT = Path("test.cpacs.xml")   # your OCC converter expects this name
-VALIDATE_SCHEMA = True               # set False to skip validation entirely
-RUN_TIGL_SMOKETEST = True            # set False to skip opening with TiGL
-# ------------------------------------------------------
+# --------------------------- Config ---------------------------
 
-# CPACS 3.3 schema settings (we cache the XSD locally to bypass SSL issues)
-CPACS_SCHEMA_URL = "https://www.cpacs.de/schema/3.3/cpacs_schema.xsd"
-CPACS_SCHEMA_PATH = Path(gettempdir()) / "cpacs_schema_3_3.xsd"
+CPACS_OUT = Path("test2.cpacs.xml")
 
+# Keep this instruction short and aligned with CPACS examples.
 SYSTEM_INSTRUCTIONS = dedent("""\
-You generate only a single CPACS v3.x XML document.
+You must output only a single CPACS v3.3 XML document (no comments, no markdown).
+Follow the style of official CPACS example files.
+
 Hard requirements:
-- Root <cpacs> with version="3.3".
-- Include xsi:noNamespaceSchemaLocation="http://www.cpacs.de/schema/v3/cpacs_schema.xsd".
-- No comments, no markdown, no prose — just XML.
-- Provide /cpacs/vehicles/aircraft/model with at least one wing.
-- Ensure there is a wing with uID="wing1".
-- Use reasonable metric units and unique uIDs; avoid vendor-specific extensions.
+- Root element <cpacs> with attribute version="3.3".
+- Add xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  and xsi:noNamespaceSchemaLocation="http://www.cpacs.de/schema/v3/cpacs_schema.xsd".
+- Provide <header> with <versionInfos><versionInfo><cpacsVersion>3.3</cpacsVersion></versionInfo></versionInfos>.
+- Under /cpacs/vehicles/aircraft/model create exactly one model that contains:
+  - /wings/wing with uID="wing1" and <symmetry>y</symmetry>.
+  - A minimal, consistent definition using sections/elements/positionings so that TiGL can loft it.
+  - Include simple airfoil definitions under /vehicles/profiles/airfoils and reference them via airfoilUID.
+- Use reasonable metric units and unique uIDs.
+- Keep it small and coherent (root+tip sections are fine).
 """)
 
-# ----- OpenAI: support both Responses API (new) and Chat Completions (fallback)
-def generate_cpacs_from_prompt(prompt: str) -> str:
-    from openai import OpenAI  # import here so script loads even if lib missing
+# --------------------------- OpenAI call ---------------------------
 
-    load_dotenv()
-    if not os.environ.get("OPENAI_API_KEY"):
-        raise RuntimeError("OPENAI_API_KEY missing. Put it in a .env file next to app.py")
+def _strip_fences(s: str) -> str:
+    s = s.strip()
+    if s.startswith("```"):
+        lines = [ln for ln in s.splitlines() if not ln.strip().startswith("```")]
+        s = "\n".join(lines).strip()
+    return s
 
-    client = OpenAI()
+def generate_cpacs_from_prompt(user_prompt: str) -> str:
+    # Uses the simple Chat Completions API for compatibility.
+    from openai import OpenAI
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY is not set.")
 
-    xml = None
-    # Try the newer Responses API first
-    try:
-        rsp = client.responses.create(
-            model="gpt-4.1-mini",
-            input=[
-                {"role": "system", "content": SYSTEM_INSTRUCTIONS},
-                {"role": "user", "content": prompt},
-            ],
-        )
-        xml = (getattr(rsp, "output_text", None) or "").strip()
-    except TypeError:
-        # Fallback to older Chat Completions API if Responses doesn't match your SDK
-        chat = client.chat.completions.create(
-            model="gpt-4.1",
-            messages=[
-                {"role": "system", "content": SYSTEM_INSTRUCTIONS},
-                {"role": "user", "content": prompt},
-            ],
-        )
-        xml = (chat.choices[0].message.content or "").strip()
+    client = OpenAI(api_key=api_key)
 
-    # Remove accidental ``` fences if present
-    if xml.startswith("```"):
-        lines = [ln for ln in xml.splitlines() if not ln.strip().startswith("```")]
-        xml = "\n".join(lines).strip()
+    chat = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[
+            {"role": "system", "content": SYSTEM_INSTRUCTIONS},
+            {"role": "user", "content": user_prompt.strip()},
+        ],
+        temperature=0.2,
+    )
+    xml = chat.choices[0].message.content or ""
+    return _strip_fences(xml)
 
-    return xml
+# --------------------------- Optional TiGL check ---------------------------
 
-
-
-
-# ----- Schema validation (with local cache to avoid SSL/CERT issues)
-def ensure_local_schema() -> str:
-    if CPACS_SCHEMA_PATH.exists() and CPACS_SCHEMA_PATH.stat().st_size > 0:
-        return str(CPACS_SCHEMA_PATH)
-
-    ctx = ssl.create_default_context(cafile=certifi.where())
-    with urllib.request.urlopen(CPACS_SCHEMA_URL, context=ctx) as r, open(CPACS_SCHEMA_PATH, "wb") as f:
-        f.write(r.read())
-    return str(CPACS_SCHEMA_PATH)
-
-
-def validate_cpacs(xml_text: str) -> None:
-    try:
-        schema_path = ensure_local_schema()
-    except Exception as e:
-        print(f"⚠️  Could not fetch schema ({e}). Skipping validation.")
-        return
-
-    try:
-        schema = xmlschema.XMLSchema(schema_path)
-        try:
-            schema.validate(xml_text)
-        except Exception:
-            with NamedTemporaryFile("w", suffix=".xml", delete=False) as f:
-                f.write(xml_text)
-                tmp = f.name
-            schema.validate(tmp)
-    except Exception as e:
-        raise RuntimeError(f"CPACS schema validation failed: {e}")
-
-
-# ----- Optional: quick sanity check with TiGL (no pythonOCC needed)
 def tigl_smoketest(cpacs_path: Path) -> None:
-    if not RUN_TIGL_SMOKETEST or not HAVE_TIGL:
+    if not HAVE_TIGL:
         return
+    tx = tixi3.Tixi3()
+    tg = tigl3.Tigl3()
     try:
-        tx = tixi3.Tixi3()
         tx.open(str(cpacs_path))
-        tg = tigl3.Tigl3()
         tg.open(tx, "")
-        # should succeed if wing1 exists
         mgr = tigl3.configuration.CCPACSConfigurationManager_get_instance()
         cfg = mgr.get_configuration(tg._handle.value)
-        wing = cfg.get_wing("wing1")
-        _ = wing.get_loft()  # ensure loft is buildable
-        tg.close()
-        tx.close()
-        print("✓ TiGL smoketest passed (wing1 lofted).")
-    except Exception as e:
-        print(f"⚠️  TiGL smoketest warning: {e}")
+        wing = cfg.get_wing("wing1")  # must exist
+        _ = wing.get_loft()           # must be buildable
+        print("TiGL smoketest: OK (wing1 lofted).")
+    finally:
+        try:
+            tg.close()
+        except Exception:
+            pass
+        try:
+            tx.close()
+        except Exception:
+            pass
 
+# --------------------------- CLI ---------------------------
 
 def main():
-    print("→ Generating CPACS from prompt...")
-    xml_text = generate_cpacs_from_prompt(PROMPT)
+    p = argparse.ArgumentParser(description="Prompt -> CPACS v3.3 (with wing1) -> test2.cpacs.xml")
+    p.add_argument("--prompt", default="Single-engine two-seat trainer, ~10 m span, straight-taper wing.")
+    p.add_argument("--no-tigl-check", action="store_true", help="Skip TiGL smoketest")
+    args = p.parse_args()
 
-    if VALIDATE_SCHEMA:
-        print("→ Validating CPACS against CPACS 3.3 schema (local cache)...")
-        try:
-            validate_cpacs(xml_text)
-        except Exception as e:
-            print(f"⚠️  Validation error: {e}\n   Continuing without validation.")
+    print("Generating CPACS from prompt...")
+    xml_text = generate_cpacs_from_prompt(args.prompt)
 
-    print(f"→ Writing CPACS: {CPACS_OUT}")
+    print(f"Writing {CPACS_OUT}")
     CPACS_OUT.write_text(xml_text, encoding="utf-8")
 
-    tigl_smoketest(CPACS_OUT)
+    if not args.no_tigl_check:
+        try:
+            tigl_smoketest(CPACS_OUT)
+        except Exception as e:
+            # Keep lightweight: just inform, do not fail the run.
+            print(f"TiGL smoketest warning: {e}")
 
-    print(f"✅ Done. You can now run your OCC exporter on {CPACS_OUT}.")
-
+    print("Done.")
 
 if __name__ == "__main__":
     main()

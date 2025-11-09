@@ -1,0 +1,138 @@
+<cpacs version="3.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.cpacs.de/schema/v3/cpacs_schema.xsd">
+  <header>
+    <versionInfos>
+      <versionInfo>
+        <cpacsVersion>3.3</cpacsVersion>
+      </versionInfo>
+    </versionInfos>
+  </header>
+  <vehicles>
+    <aircraft>
+      <model>
+        <profiles>
+          <airfoils>
+            <airfoil uID="af_root">
+              <name>NACA2412</name>
+              <description>Root airfoil NACA 2412</description>
+              <coordinates>
+                <coordinate>
+                  <x>1.0</x>
+                  <y>0.0</y>
+                </coordinate>
+                <coordinate>
+                  <x>0.5</x>
+                  <y>0.05</y>
+                </coordinate>
+                <coordinate>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                </coordinate>
+                <coordinate>
+                  <x>0.5</x>
+                  <y>-0.05</y>
+                </coordinate>
+                <coordinate>
+                  <x>1.0</x>
+                  <y>0.0</y>
+                </coordinate>
+              </coordinates>
+            </airfoil>
+            <airfoil uID="af_tip">
+              <name>NACA2412</name>
+              <description>Tip airfoil NACA 2412</description>
+              <coordinates>
+                <coordinate>
+                  <x>1.0</x>
+                  <y>0.0</y>
+                </coordinate>
+                <coordinate>
+                  <x>0.5</x>
+                  <y>0.04</y>
+                </coordinate>
+                <coordinate>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                </coordinate>
+                <coordinate>
+                  <x>0.5</x>
+                  <y>-0.04</y>
+                </coordinate>
+                <coordinate>
+                  <x>1.0</x>
+                  <y>0.0</y>
+                </coordinate>
+              </coordinates>
+            </airfoil>
+          </airfoils>
+        </profiles>
+        <wings>
+          <wing uID="wing1">
+            <symmetry>y</symmetry>
+            <sections>
+              <section uID="root_section">
+                <position>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </position>
+                <elements>
+                  <element uID="root_element">
+                    <chord>1.5</chord>
+                    <profile>
+                      <airfoilUID>af_root</airfoilUID>
+                    </profile>
+                    <twist>0.0</twist>
+                    <sweepLE>0.0</sweepLE>
+                  </element>
+                </elements>
+              </section>
+              <section uID="tip_section">
+                <position>
+                  <x>5.0</x>
+                  <y>5.0</y>
+                  <z>0.0</z>
+                </position>
+                <elements>
+                  <element uID="tip_element">
+                    <chord>0.75</chord>
+                    <profile>
+                      <airfoilUID>af_tip</airfoilUID>
+                    </profile>
+                    <twist>0.0</twist>
+                    <sweepLE>0.0</sweepLE>
+                  </element>
+                </elements>
+              </section>
+            </sections>
+            <positionings>
+              <positioning uID="pos_root" sectionUID="root_section">
+                <translation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </translation>
+                <rotation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </rotation>
+              </positioning>
+              <positioning uID="pos_tip" sectionUID="tip_section">
+                <translation>
+                  <x>5.0</x>
+                  <y>5.0</y>
+                  <z>0.0</z>
+                </translation>
+                <rotation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </rotation>
+              </positioning>
+            </positionings>
+          </wing>
+        </wings>
+      </model>
+    </aircraft>
+  </vehicles>
+</cpacs>
