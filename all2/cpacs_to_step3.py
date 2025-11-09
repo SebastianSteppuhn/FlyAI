@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # cpacs_to_solid_step_debug.py
-# CPACS 3.x -> Solid STEP with robust symmetry (x/y/z) + per-part debug export.
+# CPACS 3.x -> Solid STEP with robust symmetry (x/y/z & CPACS planes) + per-part debug export.
 
 # ------------------ USER SETTINGS ------------------
-CPACS_FILE = "edited_cpacs.xml"   # Input CPACS
-STEP_OUT   = "test2_solid.stp"   # Output (all parts)
-CONFIG_UID = None                   # e.g. "PromptPlane_UID", or None to auto-pick first
-SEW_TOL    = 1e-6                   # Sewing tolerance
-FUSE_ALL   = True                  # Fuse solids into one
-EXPORT_OPEN_AS_SHELL = True         # Export shells when solid fails
-EXPORT_PARTS_DIR = "out_parts"      # Per-part STEP export (set None to disable)
+CPACS_FILE = "plane.cpacs.xml"   # Input CPACS
+STEP_OUT   = "plane.stp"    # Output (all parts)
+CONFIG_UID = None                 # e.g. "PromptPlane_UID", or None to auto-pick first
+SEW_TOL    = 1e-6                 # Sewing tolerance
+FUSE_ALL   = True                 # Fuse solids into one
+EXPORT_OPEN_AS_SHELL = True       # Export shells when solid fails
+EXPORT_PARTS_DIR = "out_parts"    # Per-part STEP export (set None to disable)
 VERBOSE    = True
 # ---------------------------------------------------
 
@@ -34,10 +34,13 @@ from OCC.Core.TopoDS import TopoDS_Shape, topods_Shell, TopoDS_Compound
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Fuse
+from OCC.Core.gp import gp_Trsf, gp_Pnt, gp_Dir, gp_Ax2
+
 
 def log(msg):
     if VERBOSE:
         print(msg)
+
 
 # ---------- Config UID detection ----------
 def find_config_uids(cpacs_path: str):
@@ -46,17 +49,23 @@ def find_config_uids(cpacs_path: str):
     uids = []
     for m in root.findall("./vehicles/aircraft/model"):
         uid = m.get("uID")
-        if uid: uids.append(uid)
+        if uid:
+            uids.append(uid)
     for m in root.findall("./vehicles/rotorcraft/model"):
         uid = m.get("uID")
-        if uid: uids.append(uid)
+        if uid:
+            uids.append(uid)
     return uids
+
 
 # ---------- Wing symmetry lookup ----------
 def map_wing_symmetry(cpacs_path: str, cfg_uid: str):
     """
-    Returns {wing_uid: 'x'|'y'|'z'|None} under selected model.
-    Looks under both .../aircraftModel/wings and .../wings (fallback).
+    Returns {wing_uid: plane_string|None} under selected model.
+
+    plane_string can be:
+        - simple: 'x', 'y', 'z'
+        - CPACS style: 'x-y-plane', 'x-z-plane', 'y-z-plane', 'xy-plane', 'xz-plane', 'yz-plane'
     """
     tree = etree.parse(cpacs_path)
     root = tree.getroot()
@@ -64,11 +73,13 @@ def map_wing_symmetry(cpacs_path: str, cfg_uid: str):
     base = None
     for m in root.findall("./vehicles/aircraft/model"):
         if m.get("uID") == cfg_uid:
-            base = m; break
+            base = m
+            break
     if base is None:
         for m in root.findall("./vehicles/rotorcraft/model"):
             if m.get("uID") == cfg_uid:
-                base = m; break
+                base = m
+                break
     if base is None:
         return {}
 
@@ -79,13 +90,25 @@ def map_wing_symmetry(cpacs_path: str, cfg_uid: str):
     sym = {}
     for w in wings:
         uid = w.get("uID")
-        sv = None
-        se = w.find("symmetry")
-        if se is not None and se.text:
-            sv = se.text.strip().lower()  # 'x' | 'y' | 'z'
-        if uid:
-            sym[uid] = sv
+        if not uid:
+            continue
+
+        # CPACS: symmetry is an *attribute*, e.g. symmetry="x-z-plane"
+        raw = (w.get("symmetry") or "").strip().lower()
+
+        # We only keep values we know how to mirror
+        if raw in (
+            "x", "y", "z",
+            "x-y-plane", "xy-plane",
+            "x-z-plane", "xz-plane",
+            "y-z-plane", "yz-plane",
+        ):
+            sym[uid] = raw
+        else:
+            sym[uid] = None
+
     return sym
+
 
 # ---------- Geometry utils ----------
 def shape_is_valid(shape: TopoDS_Shape) -> bool:
@@ -93,6 +116,7 @@ def shape_is_valid(shape: TopoDS_Shape) -> bool:
         return BRepCheck_Analyzer(shape, True).IsValid()
     except Exception:
         return False
+
 
 def sew_to_shell(shape: TopoDS_Shape, tol: float):
     sewer = BRepBuilderAPI_Sewing(tol)
@@ -102,7 +126,9 @@ def sew_to_shell(shape: TopoDS_Shape, tol: float):
     try:
         return topods_Shell(sewed), True
     except Exception:
+        # not a shell; return as-is
         return sewed, False
+
 
 def shell_to_solid(shell_or_shape: TopoDS_Shape):
     try:
@@ -116,43 +142,57 @@ def shell_to_solid(shell_or_shape: TopoDS_Shape):
         pass
     return shell_or_shape
 
+
 def mirror(shape: TopoDS_Shape, plane: str) -> TopoDS_Shape:
     """
-    plane: 'x' -> mirror across YZ (X=0)
-           'y' -> mirror across XZ (Y=0)
-           'z' -> mirror across XY (Z=0)
+    plane:
+        'x'  or 'y-z-plane'/'yz-plane' -> mirror across YZ (X=0)
+        'y'  or 'x-z-plane'/'xz-plane' -> mirror across XZ (Y=0)
+        'z'  or 'x-y-plane'/'xy-plane' -> mirror across XY (Z=0)
     """
+    plane = (plane or "").lower()
     tr = gp_Trsf()
-    if plane == "x":
-        tr.SetMirror(gp_Pln(gp_Pnt(0,0,0), gp_Dir(1,0,0)))
-    elif plane == "y":
-        tr.SetMirror(gp_Pln(gp_Pnt(0,0,0), gp_Dir(0,1,0)))
-    elif plane == "z":
-        tr.SetMirror(gp_Pln(gp_Pnt(0,0,0), gp_Dir(0,0,1)))
+
+    # gp_Ax2(Location, Direction) defines a *plane* perpendicular to Direction, through Location
+    if plane in ("x", "y-z-plane", "yz-plane"):
+        tr.SetMirror(gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(1, 0, 0)))  # YZ plane (normal +X)
+    elif plane in ("y", "x-z-plane", "xz-plane"):
+        tr.SetMirror(gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 1, 0)))  # XZ plane (normal +Y)
+    elif plane in ("z", "x-y-plane", "xy-plane"):
+        tr.SetMirror(gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1)))  # XY plane (normal +Z)
     else:
-        return shape
+        return shape  # Unknown symmetry -> no-op
+
     return BRepBuilderAPI_Transform(shape, tr, True).Shape()
 
+
+
 def fuse_all_solids(solids):
-    if not solids: return None
+    if not solids:
+        return None
     res = solids[0]
     for s in solids[1:]:
         try:
-            fu = BRepAlgoAPI_Fuse(res, s); fu.Build()
+            fu = BRepAlgoAPI_Fuse(res, s)
+            fu.Build()
             if fu.IsDone():
                 res = fu.Shape()
         except Exception:
             pass
     return res
 
+
 def make_compound(shapes):
     builder = BRep_Builder()
     comp = TopoDS_Compound()
     builder.MakeCompound(comp)
     for s in shapes:
-        try: builder.Add(comp, s)
-        except Exception: pass
+        try:
+            builder.Add(comp, s)
+        except Exception:
+            pass
     return comp
+
 
 def export_step_shapes(shapes, out_path: str):
     writer = STEPControl_Writer()
@@ -170,12 +210,14 @@ def export_step_shapes(shapes, out_path: str):
         raise RuntimeError("STEP export failed.")
     return count
 
+
 def export_single_step(shape, out_path: str):
     writer = STEPControl_Writer()
     writer.Transfer(shape, STEPControl_AsIs)
     status = writer.Write(out_path)
     if status != IFSelect_RetDone:
         raise RuntimeError(f"STEP export failed for {out_path}")
+
 
 # ---------- TiGL component collection ----------
 def collect_components(aircraft):
@@ -210,6 +252,7 @@ def collect_components(aircraft):
     except Exception as e:
         log(f" ! Fuselage enumeration failed: {e}")
 
+
 def main():
     # --- Open CPACS ---
     log(f"Opening CPACS: {CPACS_FILE}")
@@ -234,7 +277,7 @@ def main():
     # symmetry map for wings
     wing_sym = map_wing_symmetry(CPACS_FILE, cfg_uid)
     if wing_sym:
-        log("Wing symmetry map: " + ", ".join([f"{k}:{v}" for k,v in wing_sym.items()]))
+        log("Wing symmetry map: " + ", ".join([f"{k}:{v}" for k, v in wing_sym.items()]))
 
     # --- Build shapes ---
     if EXPORT_PARTS_DIR:
@@ -242,12 +285,13 @@ def main():
 
     solids, shells = [], []
     made = 0
+
     for kind, uid, base_shape in collect_components(aircraft):
         to_process = [(kind, uid, base_shape)]
 
-        # Add mirrored variant(s) if symmetry declared
-        sym = (wing_sym.get(uid) or "").lower() if kind == "wing" else None
-        if sym in ("x","y","z"):
+        # Add mirrored variant(s) if symmetry declared for this wing
+        sym = wing_sym.get(uid) if kind == "wing" else None
+        if sym:
             mir = mirror(base_shape, sym)
             to_process.append((f"{kind}_mirror_{sym}", f"{uid}_mirror", mir))
 
@@ -293,7 +337,9 @@ def main():
     n = export_step_shapes(export_shapes, STEP_OUT)
     log(f"✓ Wrote {n} shape(s) to {STEP_OUT}")
 
-    tigl.close(); tixi.close()
+    tigl.close()
+    tixi.close()
+
 
 if __name__ == "__main__":
     main()

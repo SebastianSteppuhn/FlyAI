@@ -14,11 +14,11 @@ import multiprocessing
 import os
 
 # ---------- USER SETTINGS ----------
-STEP_PATH    = "../step/plane.stp"   # solid STEP file (closed B-Rep)
+STEP_PATH    = "plane.stp"   # solid STEP file (closed B-Rep)
 FLOW_AXIS    = "x"                       # 'x' | 'y' | 'z'
 PRESET       = "TINY_~0p5_1p2M"             # mesh & box size preset
-SU2_FILENAME = "../all/plane.su2"  # SU2 mesh output
-MSH_FILENAME = "../all/plane.msh"  # optional: gmsh .msh
+SU2_FILENAME = "plane.su2"  # SU2 mesh output
+MSH_FILENAME = "plane.msh"  # optional: gmsh .msh
 # -----------------------------------
 
 PRESETS = {
@@ -224,17 +224,13 @@ def main():
         # ------------------------- Mesh & export ------------------------
         gmsh.model.mesh.generate(3)
 
-        # Optional: save .msh for external converters (gmshToSU2.py)
-        if MSH_FILENAME:
-            os.makedirs(os.path.dirname(MSH_FILENAME), exist_ok=True)
-            gmsh.write(MSH_FILENAME)
-            print(f"Gmsh mesh (v2.2) written to: {MSH_FILENAME}")
+        gmsh.write(MSH_FILENAME)
+        print(f"Gmsh mesh (v2.2) written to: {MSH_FILENAME}")
 
         # Direct SU2 export
-        if SU2_FILENAME:
-            os.makedirs(os.path.dirname(SU2_FILENAME), exist_ok=True)
-            gmsh.write(SU2_FILENAME)
-            print(f"SU2 mesh written to: {SU2_FILENAME}")
+
+        gmsh.write(SU2_FILENAME)
+        print(f"SU2 mesh written to: {SU2_FILENAME}")
 
         print(
             f"Faces -> inlet: {len(inlet)}, outlet: {len(outlet)}, "

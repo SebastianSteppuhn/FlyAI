@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cpacs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://www.cpacs.de/schema/v3_5_0/cpacs_schema.xsd">
+    <header>
+        <name>Basic Wing Model</name>
+        <version>1.0.0</version>
+        <!-- Deprecated: The <cpacsVersion> is needed to open the file in TiGL. TiGL will soon be adapted to get this information from the versinInfo node. -->
+        <cpacsVersion>3.5</cpacsVersion>
+        <versionInfos>
+            <versionInfo version="1.0.0">
+                <creator>DLR-SL</creator>
+                <timestamp>2019-12-04T10:30:00</timestamp>
+                <description>Create initial data set</description>
+                <cpacsVersion>3.5</cpacsVersion>
+            </versionInfo>
+        </versionInfos>
+    </header>
+
+<vehicles>
+  <profiles>
+    <fuselageProfiles>
+      <fuselageProfile uID="fuselageProf1">
+        <name>SimpleFuselageProfile</name>
+        <pointList>
+          <x>0.0 0.0 0.0 0.0 0.0</x>
+          <y>0.0 0.5 0.0 -0.5 0.0</y>
+          <z>0.5 0.0 -0.5 0.0 0.5</z>
+        </pointList>
+      </fuselageProfile>
+    </fuselageProfiles>
+    <wingAirfoils>
+      <wingAirfoil uID="wingAirfoil1">
+        <name>SimpleWingAirfoil</name>
+        <pointList>
+          <x>1.0 0.5 0.0 0.5 1.0</x>
+          <y>0.0 0.0 0.0 0.0 0.0</y>
+          <z>0.0 0.05 0.0 -0.05 0.0</z>
+        </pointList>
+      </wingAirfoil>
+    </wingAirfoils>
+  </profiles>
+  <aircraft>
+    <model uID="model1">
+      <name>VerySimpleModel</name>
+      <description>Very simple test aircraft model.</description>
+      <fuselages>
+        <fuselage uID="fuselage1">
+          <name>MainBody</name>
+          <transformation>
+            <translation>
+              <x>0.0</x>
+              <y>0.0</y>
+              <z>0.0</z>
+            </translation>
+            <rotation>
+              <x>0.0</x>
+              <y>0.0</y>
+              <z>0.0</z>
+            </rotation>
+            <scaling>
+              <x>1.0</x>
+              <y>1.0</y>
+              <z>1.0</z>
+            </scaling>
+          </transformation>
+          <sections>
+            <section uID="fuseSec1">
+              <name>FuselageSection1</name>
+              <transformation>
+                <translation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </translation>
+                <rotation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </rotation>
+                <scaling>
+                  <x>1.0</x>
+                  <y>1.0</y>
+                  <z>1.0</z>
+                </scaling>
+              </transformation>
+              <elements>
+                <element uID="fuseElem1">
+                  <name>FuselageElement1</name>
+                  <profileUID>fuselageProf1</profileUID>
+                  <transformation>
+                    <translation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </translation>
+                    <rotation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </rotation>
+                    <scaling>
+                      <x>1.0</x>
+                      <y>1.0</y>
+                      <z>1.0</z>
+                    </scaling>
+                  </transformation>
+                </element>
+              </elements>
+            </section>
+            <section uID="fuseSec2">
+              <name>FuselageSection2</name>
+              <transformation>
+                <translation>
+                  <x>2.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </translation>
+                <rotation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </rotation>
+                <scaling>
+                  <x>1.0</x>
+                  <y>1.0</y>
+                  <z>1.0</z>
+                </scaling>
+              </transformation>
+              <elements>
+                <element uID="fuseElem2">
+                  <name>FuselageElement2</name>
+                  <profileUID>fuselageProf1</profileUID>
+                  <transformation>
+                    <translation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </translation>
+                    <rotation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </rotation>
+                    <scaling>
+                      <x>0.8</x>
+                      <y>0.8</y>
+                      <z>0.8</z>
+                    </scaling>
+                  </transformation>
+                </element>
+              </elements>
+            </section>
+          </sections>
+          <positionings>
+            <positioning uID="fusePos1">
+              <name>FuselagePositioning</name>
+              <fromSectionUID>fuseSec1</fromSectionUID>
+              <toSectionUID>fuseSec2</toSectionUID>
+              <length>2.0</length>
+            </positioning>
+          </positionings>
+          <segments>
+            <segment uID="fuseSeg1">
+              <name>FuselageSegment1</name>
+              <fromElementUID>fuseElem1</fromElementUID>
+              <toElementUID>fuseElem2</toElementUID>
+            </segment>
+          </segments>
+        </fuselage>
+      </fuselages>
+      <wings>
+        <wing uID="wing1" symmetry="x-z-plane">
+          <name>MainWing</name>
+          <transformation>
+            <translation>
+              <x>0.0</x>
+              <y>0.0</y>
+              <z>0.5</z>
+            </translation>
+            <rotation>
+              <x>0.0</x>
+              <y>0.0</y>
+              <z>0.0</z>
+            </rotation>
+          </transformation>
+          <sections>
+            <section uID="wingSec1">
+              <name>WingSection1</name>
+              <transformation>
+                <translation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </translation>
+                <rotation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </rotation>
+                <scaling>
+                  <x>1.0</x>
+                  <y>1.0</y>
+                  <z>1.0</z>
+                </scaling>
+              </transformation>
+              <elements>
+                <element uID="wingSec1Elem1">
+                  <name>WingElement1</name>
+                  <airfoilUID>wingAirfoil1</airfoilUID>
+                  <transformation>
+                    <translation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </translation>
+                    <rotation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </rotation>
+                    <scaling>
+                      <x>1.0</x>
+                      <y>1.0</y>
+                      <z>1.0</z>
+                    </scaling>
+                  </transformation>
+                </element>
+              </elements>
+            </section>
+            <section uID="wingSec2">
+              <name>WingSection2</name>
+              <transformation>
+                <translation>
+                  <x>0.5</x>
+                  <y>2.0</y>
+                  <z>0.1</z>
+                </translation>
+                <rotation>
+                  <x>0.0</x>
+                  <y>0.0</y>
+                  <z>0.0</z>
+                </rotation>
+                <scaling>
+                  <x>0.8</x>
+                  <y>1.0</y>
+                  <z>0.8</z>
+                </scaling>
+              </transformation>
+              <elements>
+                <element uID="wingSec2Elem1">
+                  <name>WingElement2</name>
+                  <airfoilUID>wingAirfoil1</airfoilUID>
+                  <transformation>
+                    <translation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </translation>
+                    <rotation>
+                      <x>0.0</x>
+                      <y>0.0</y>
+                      <z>0.0</z>
+                    </rotation>
+                    <scaling>
+                      <x>0.8</x>
+                      <y>1.0</y>
+                      <z>0.8</z>
+                    </scaling>
+                  </transformation>
+                </element>
+              </elements>
+            </section>
+          </sections>
+          <positionings>
+            <positioning uID="wingPos1">
+              <name>WingPositioning</name>
+              <fromSectionUID>wingSec1</fromSectionUID>
+              <toSectionUID>wingSec2</toSectionUID>
+              <length>2.0</length>
+              <sweepAngle>10.0</sweepAngle>
+              <dihedralAngle>3.0</dihedralAngle>
+            </positioning>
+          </positionings>
+          <segments>
+            <segment uID="wingSeg1">
+              <name>WingSegment1</name>
+              <fromElementUID>wingSec1Elem1</fromElementUID>
+              <toElementUID>wingSec2Elem1</toElementUID>
+            </segment>
+          </segments>
+        </wing>
+      </wings>
+    </model>
+  </aircraft>
+</vehicles>
+</cpacs>

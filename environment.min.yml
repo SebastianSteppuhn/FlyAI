@@ -1,0 +1,17 @@
+name: cpacs-cfd
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - gmsh
+  - matplotlib
+  - meshio
+  - numpy
+  - pandas
+  - scipy
+  - su2
+  - tigl3
+  - tixi3
+  - openai
+  - imageio
+prefix: /home/sebastian/miniconda3/envs/cpacs-cfd
