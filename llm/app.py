@@ -85,7 +85,7 @@ def generate_cpacs_from_prompt(user_prompt: str) -> str:
     client = OpenAI(api_key=api_key)
 
     chat = client.chat.completions.create(
-        model="gpt-4.1-mini",
+        model="gpt-4.1",
         messages=[
             {"role": "system", "content": SYSTEM_INSTRUCTIONS},
             {"role": "user", "content": user_prompt.strip()},

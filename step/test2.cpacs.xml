@@ -1,135 +1,129 @@
 <cpacs version="3.3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.cpacs.de/schema/v3/cpacs_schema.xsd">
-  <header>
-    <versionInfos>
-      <versionInfo>
-        <cpacsVersion>3.3</cpacsVersion>
-      </versionInfo>
-    </versionInfos>
-  </header>
+    <header>
+        <name>Basic Wing Model</name>
+        <version>1.0.0</version>
+        <!-- Deprecated: The <cpacsVersion> is needed to open the file in TiGL. TiGL will soon be adapted to get this information from the versinInfo node. -->
+        <cpacsVersion>3.5</cpacsVersion>
+        <versionInfos>
+            <versionInfo version="1.0.0">
+                <creator>DLR-SL</creator>
+                <timestamp>2019-12-04T10:30:00</timestamp>
+                <description>Create initial data set</description>
+                <cpacsVersion>3.5</cpacsVersion>
+            </versionInfo>
+        </versionInfos>
+    </header>
   <vehicles>
+    <profiles>
+      <airfoils>
+        <airfoil uID="af_root">
+          <name>NACA2412-root</name>
+          <pointList>
+            1.0 0.0
+            0.95 0.015
+            0.8 0.035
+            0.6 0.045
+            0.4 0.038
+            0.2 0.025
+            0.0 0.0
+            0.2 -0.015
+            0.4 -0.018
+            0.6 -0.012
+            0.8 -0.005
+            0.95 -0.001
+            1.0 0.0
+          </pointList>
+        </airfoil>
+        <airfoil uID="af_tip">
+          <name>NACA2412-tip</name>
+          <pointList>
+            1.0 0.0
+            0.95 0.012
+            0.8 0.028
+            0.6 0.036
+            0.4 0.030
+            0.2 0.018
+            0.0 0.0
+            0.2 -0.012
+            0.4 -0.015
+            0.6 -0.010
+            0.8 -0.004
+            0.95 -0.001
+            1.0 0.0
+          </pointList>
+        </airfoil>
+      </airfoils>
+    </profiles>
     <aircraft>
-      <model>
-        <profiles>
-          <airfoils>
-            <airfoil uID="af_root">
-              <name>NACA2412</name>
-              <description>Root airfoil NACA 2412</description>
-              <coordinates>
-                <coordinate>
-                  <x>1.0</x>
-                  <y>0.0</y>
-                </coordinate>
-                <coordinate>
-                  <x>0.5</x>
-                  <y>0.05</y>
-                </coordinate>
-                <coordinate>
-                  <x>0.0</x>
-                  <y>0.0</y>
-                </coordinate>
-                <coordinate>
-                  <x>0.5</x>
-                  <y>-0.05</y>
-                </coordinate>
-                <coordinate>
-                  <x>1.0</x>
-                  <y>0.0</y>
-                </coordinate>
-              </coordinates>
-            </airfoil>
-            <airfoil uID="af_tip">
-              <name>NACA2412</name>
-              <description>Tip airfoil NACA 2412</description>
-              <coordinates>
-                <coordinate>
-                  <x>1.0</x>
-                  <y>0.0</y>
-                </coordinate>
-                <coordinate>
-                  <x>0.5</x>
-                  <y>0.04</y>
-                </coordinate>
-                <coordinate>
-                  <x>0.0</x>
-                  <y>0.0</y>
-                </coordinate>
-                <coordinate>
-                  <x>0.5</x>
-                  <y>-0.04</y>
-                </coordinate>
-                <coordinate>
-                  <x>1.0</x>
-                  <y>0.0</y>
-                </coordinate>
-              </coordinates>
-            </airfoil>
-          </airfoils>
-        </profiles>
+      <model uID="trainer1">
+        <name>Single-engine Two-seat Trainer</name>
         <wings>
           <wing uID="wing1">
+            <name>Main Wing</name>
             <symmetry>y</symmetry>
             <sections>
-              <section uID="root_section">
-                <position>
-                  <x>0.0</x>
-                  <y>0.0</y>
-                  <z>0.0</z>
-                </position>
+              <section uID="sec_root">
+                <name>Root Section</name>
                 <elements>
-                  <element uID="root_element">
-                    <chord>1.5</chord>
-                    <profile>
-                      <airfoilUID>af_root</airfoilUID>
-                    </profile>
-                    <twist>0.0</twist>
-                    <sweepLE>0.0</sweepLE>
+                  <element uID="elem_root">
+                    <airfoilUID>af_root</airfoilUID>
+                    <transformation>
+                      <translation>
+                        0.0 0.0 0.0
+                      </translation>
+                      <rotation>
+                        0.0 0.0 0.0
+                      </rotation>
+                      <scaling>
+                        1.0 1.0 1.0
+                      </scaling>
+                    </transformation>
+                    <width>0.0</width>
                   </element>
                 </elements>
               </section>
-              <section uID="tip_section">
-                <position>
-                  <x>5.0</x>
-                  <y>5.0</y>
-                  <z>0.0</z>
-                </position>
+              <section uID="sec_tip">
+                <name>Tip Section</name>
                 <elements>
-                  <element uID="tip_element">
-                    <chord>0.75</chord>
-                    <profile>
-                      <airfoilUID>af_tip</airfoilUID>
-                    </profile>
-                    <twist>0.0</twist>
-                    <sweepLE>0.0</sweepLE>
+                  <element uID="elem_tip">
+                    <airfoilUID>af_tip</airfoilUID>
+                    <transformation>
+                      <translation>
+                        5.0 0.0 0.0
+                      </translation>
+                      <rotation>
+                        0.0 0.0 0.0
+                      </rotation>
+                      <scaling>
+                        1.0 1.0 1.0
+                      </scaling>
+                    </transformation>
+                    <width>0.0</width>
                   </element>
                 </elements>
               </section>
             </sections>
             <positionings>
-              <positioning uID="pos_root" sectionUID="root_section">
-                <translation>
-                  <x>0.0</x>
-                  <y>0.0</y>
-                  <z>0.0</z>
-                </translation>
-                <rotation>
-                  <x>0.0</x>
-                  <y>0.0</y>
-                  <z>0.0</z>
-                </rotation>
-              </positioning>
-              <positioning uID="pos_tip" sectionUID="tip_section">
-                <translation>
-                  <x>5.0</x>
-                  <y>5.0</y>
-                  <z>0.0</z>
-                </translation>
-                <rotation>
-                  <x>0.0</x>
-                  <y>0.0</y>
-                  <z>0.0</z>
-                </rotation>
+              <positioning uID="pos_root_tip">
+                <fromSection>sec_root</fromSection>
+                <toSection>sec_tip</toSection>
+                <length>5.0</length>
+                <sweepAngle>2.0</sweepAngle>
+                <dihedralAngle>3.0</dihedralAngle>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
               </positioning>
             </positionings>
+            <segments>
+              <segment uID="seg1">
+                <name>Root to Tip</name>
+                <startSectionUID>sec_root</startSectionUID>
+                <startElementUID>elem_root</startElementUID>
+                <endSectionUID>sec_tip</endSectionUID>
+                <endElementUID>elem_tip</endElementUID>
+              </segment>
+            </segments>
           </wing>
         </wings>
       </model>

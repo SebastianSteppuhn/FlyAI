@@ -3,7 +3,7 @@
 # CPACS 3.x -> Solid STEP with robust symmetry (x/y/z) + per-part debug export.
 
 # ------------------ USER SETTINGS ------------------
-CPACS_FILE = "test2.cpacs.xml"   # Input CPACS
+CPACS_FILE = "test.cpacs.xml"   # Input CPACS
 STEP_OUT   = "test2_solid.stp"   # Output (all parts)
 CONFIG_UID = None                   # e.g. "PromptPlane_UID", or None to auto-pick first
 SEW_TOL    = 1e-6                   # Sewing tolerance
