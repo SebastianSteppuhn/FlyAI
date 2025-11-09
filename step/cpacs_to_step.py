@@ -8,8 +8,8 @@ from OCC.Core.TopoDS import topods_Shell
 from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
 from OCC.Core.IFSelect import IFSelect_RetDone
 
-cpacs_file = "test.cpacs.xml"      # your CPACS v3
-step_out   = "wing_solid.stp"
+cpacs_file = "aircraft.cpacs.xml"      # your CPACS v3
+step_out   = "aircraft_test.step"
 wing_uid   = "wing1"             # adjust to your CPACS
 
 # --- Open CPACS and TiGL ---
