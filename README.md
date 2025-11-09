@@ -8,6 +8,10 @@ FlyAI turns a text prompt into an aircraft concept, runs CFD, and iterates to re
 
 ---
 
+## Videos:
+https://sebastian.microflux.de/demo.mp4
+https://sebastian.microflux.de/tech.mp4
+
 ## Prereqs
 - Python 3.10+ (Conda/Mamba recommended)
 - (Optional but recommended) System deps used by the pipeline: CPACS/TiGL, SU2, OpenMPI, and a working OpenGL/OSMesa stack for off-screen renders.
